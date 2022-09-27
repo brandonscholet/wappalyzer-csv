@@ -23,7 +23,6 @@ def find_techs(url, nl):
      webpage = WebPage.new_from_url(url)
      wappalyzer = Wappalyzer.latest()
      techs = wappalyzer.analyze_with_versions_and_categories(webpage)
-     print(techs)
    except:
      return Style.BRIGHT + Fore.RED + "\n[!] SOME ERROR OCCURED FOR " + url
 
