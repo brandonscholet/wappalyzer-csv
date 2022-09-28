@@ -70,8 +70,9 @@ def find_techs(host):
        pass
 
 parser = argparse.ArgumentParser(description='Finds Web Technologies !')
-parser.add_argument('-u', '--url', help='url to find technologies')
-parser.add_argument('-f', '--file', default='', help="list of urls to find web technologies")
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-u', '--url', help='url to find technologies')
+group.add_argument('-f', '--file', default='', help="list of urls to find web technologies")
 parser.add_argument('-wf', '--writefile', default='', help="File to write csv output to")
 parser.add_argument('-t', '--threads', default='10', type=int, help="How many threads yo?")
 parser.add_argument('-q', '--quiet', default='False', action='store_true', help="Don't want to see any errors?")

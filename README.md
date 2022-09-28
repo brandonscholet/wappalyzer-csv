@@ -9,14 +9,14 @@ based on the wappalyzer-cli by gokulapap
 
 > cd wappybird
 
-> pip3 install .
+> sudo python setup.py install
 
 
 ```
-─$ ./wappybird  -h
+─$ ./wappy  -h
 usage: wappybird [-h] [-u URL] [-f FILE] [-wf WRITEFILE] [-t THREADS] [-q]
 
-Finds Web Technologies !
+Finds Web Technologies!
 
 options:
   -h, --help            show this help message and exit
