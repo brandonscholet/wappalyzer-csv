@@ -14,31 +14,34 @@ def find_version(a):
    return 'unknown'
   else:
    return a[0]
-   
-def verify_url(slug):
-  t = 'http://'+slug
+  
+def handle_http_errors(address):
   try:
-    return requests.head(t, allow_redirects=True).url
+    return requests.head(address, allow_redirects=True).url
   except requests.exceptions.HTTPError:
     if silencio != True:
-      print ('\n'+Style.BRIGHT+Fore.RED+"Http Error:",slug)
+      print ('\n'+Style.BRIGHT+Fore.RED+"Http Error:",address)
     return 0
   except requests.exceptions.ConnectionError:
     if silencio != True:
-      print ('\n'+Style.BRIGHT+Fore.RED+"Error Connecting:",slug)
+      print ('\n'+Style.BRIGHT+Fore.RED+"Error Connecting:",address)
     return 0
   except requests.exceptions.Timeout:
     if silencio != True:
-      print ('\n'+Style.BRIGHT+Fore.RED+"Timeout Error:",slug)
+      print ('\n'+Style.BRIGHT+Fore.RED+"Timeout Error:",address)
     return 0
   except requests.exceptions.RequestException:
     if silencio != True:
-      print ('\n'+Style.BRIGHT+Fore.RED+"OOps: Something Else",slug)
+      print ('\n'+Style.BRIGHT+Fore.RED+"Oops: Something Else",address)
     return 0
-  except KeyboardInterrupt:
-    if silencio != True:
-      print ('\n'+Style.BRIGHT+Fore.RED+"Keyboard interrupt on ",slug)
-    return 0
+  
+def verify_url(slug):
+  t = 'https://'+slug
+  url = handle_http_errors(t)
+  if url == 0:
+    t = 'http://'+slug
+    url = handle_http_errors(t)
+  return url 	
 
 def find_techs(host):
    host=host.strip()
