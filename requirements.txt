@@ -2,3 +2,6 @@ colorama
 requests
 argparse
 python-Wappalyzer
+concurrent
+os
+

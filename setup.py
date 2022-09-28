@@ -1,14 +1,6 @@
 from setuptools import *
 
-
-
-
-
-
-
 if __name__ == "__main__":
-
-
 
     f = open("requirements.txt", 'r')
 
@@ -18,8 +10,8 @@ if __name__ == "__main__":
 
     setup(
     scripts = ["src/wappy"],
-    name='wappalyzer-cli',
-    version='0.1.0',
+    name='wappybird',
+    version='0.1.2',
     packages=find_packages(),
     install_requires=[
         dependencies
