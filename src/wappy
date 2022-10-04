@@ -17,7 +17,7 @@ def find_version(a):
   
 def handle_http_errors(address):
   try:
-    return requests.head(address, allow_redirects=True).url
+    return requests.head(address, timeout=10, allow_redirects=True).url
   except requests.exceptions.HTTPError:
     if silencio != True:
       print ('\n'+Style.BRIGHT+Fore.RED+"Http Error:",address)
@@ -43,6 +43,8 @@ def verify_url(slug):
     url = handle_http_errors(t)
   return url 	
 
+print("lol")
+
 def find_techs(host):
    host=host.strip()
    if len(host) == 0:
@@ -52,7 +54,7 @@ def find_techs(host):
      url=verify_url(url)    
    if url != 0:  
      try:
-       webpage = WebPage.new_from_url(url, verify=False)
+       webpage = WebPage.new_from_url(url, verify=False, timeout=60)
        wappalyzer = Wappalyzer.latest()
        techs = wappalyzer.analyze_with_versions_and_categories(webpage)
      except Exception as e:
@@ -72,6 +74,10 @@ def find_techs(host):
      else:
        pass
 
+     return 1
+   else:
+     return 0
+
 parser = argparse.ArgumentParser(description='Finds Web Technologies !')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-u', '--url', help='url to find technologies')
@@ -86,7 +92,6 @@ url = args.url
 file = args.file
 writefile = args.writefile
 silencio = args.quiet
-
 
 if writefile != '':
   j = open(writefile,'a')
