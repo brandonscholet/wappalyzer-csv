@@ -43,8 +43,6 @@ def verify_url(slug):
     url = handle_http_errors(t)
   return url 	
 
-print("lol")
-
 def find_techs(host):
    host=host.strip()
    if len(host) == 0:
