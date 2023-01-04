@@ -1,5 +1,5 @@
 # wappybird
-Multithreaded Wappalyzer CLI tool to find Web Technologies 
+Multithreaded Wappalyzer CLI tool to find Web Technologies, with optional CSV output
 
 based on the wappalyzer-cli by gokulapap
 
