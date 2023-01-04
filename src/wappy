@@ -1,13 +1,59 @@
 #!/usr/bin/env python
 
-from Wappalyzer import Wappalyzer, WebPage
+import sys
 import argparse
 import requests
 from colorama import Fore, Back, Style
 import warnings
 import os
 import concurrent
+import json
+import time
+import pkg_resources
 warnings.filterwarnings("ignore")
+
+#check that the proper version of Wappalyzer is installed
+try:
+    pkg_resources.require("python-Wappalyzer>=0.4.0")
+except pkg_resources.VersionConflict as e:
+    print(Style.BRIGHT+Fore.RED,"\nError:",e,Style.BRIGHT+Fore.BLUE,"""
+    
+Wappalyzer Version is unsupported, likely installed by pip. Upgrade it with the following commands:""",Style.RESET_ALL,"""
+
+pip uninstall python-Wappalyzer || sudo pip uninstall python-Wappalyzer
+git clone https://github.com/chorsley/python-Wappalyzer.git /tmp/python-Wappalyzer
+cd /tmp/python-Wappalyzer/
+sudo python setup.py install""")
+    sys.exit()
+    
+except Exception as e:
+    print(Style.BRIGHT+Fore.RED,"\nError:",e,Style.BRIGHT+Fore.BLUE,"""
+
+Install it with the following commands:""",Style.RESET_ALL,"""
+  
+git clone https://github.com/chorsley/python-Wappalyzer.git /tmp/python-Wappalyzer
+cd /tmp/python-Wappalyzer
+sudo python setup.py install""")
+    sys.exit()
+    
+from Wappalyzer import Wappalyzer, WebPage    
+
+def update_technologies():
+  print("updating technologies",end="")
+  _technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
+  cats = requests.get('https://github.com/AliasIO/wappalyzer/raw/master/src/categories.json').json()
+  techs = {}
+  #for _ in '_abcdefghijklmnopqrstuvwxyz':
+  for _ in '_abcdefghijklmnopqrstuvwxyz':
+    r = requests.get(f'https://github.com/AliasIO/wappalyzer/raw/master/src/technologies/{_}.json')
+    print(".",end ="")
+    techs = {**techs, **r.json()}
+  obj = {'categories': cats, 'technologies': techs}
+  print()
+
+  with open(_technologies_file, 'w', encoding='utf-8') as tfile:
+    tfile.write(json.dumps(obj))
+
 
 def find_version(a):
   if a == []:
@@ -53,7 +99,7 @@ def find_techs(host):
    if url != 0:  
      try:
        webpage = WebPage.new_from_url(url, verify=False, timeout=60)
-       wappalyzer = Wappalyzer.latest()
+       wappalyzer= Wappalyzer.latest(technologies_file=_technologies_file)
        techs = wappalyzer.analyze_with_versions_and_categories(webpage)
      except Exception as e:
        if silencio != True:
@@ -62,11 +108,14 @@ def find_techs(host):
        return 0
 
      nurl = url.split("//")[1].rstrip("/")
-
+     
      print("\n[+]",Style.BRIGHT + Fore.BLUE + "TECHNOLOGIES", Style.BRIGHT + Fore.GREEN + f"[{nurl.upper()}]", Style.RESET_ALL + ":\n")
 
      for i in techs:
-       print(f"{techs[i]['categories'][0]} : {i} [version: {find_version(techs[i]['versions'])}]")
+       if find_version(techs[i]['versions']) == "unknown":
+         print(f"{techs[i]['categories'][0]} : {i}")
+       else:
+         print(f"{techs[i]['categories'][0]} : {i} [version: {find_version(techs[i]['versions'])}]")
        if j : 
          j.write(nurl.lower()+','+techs[i]['categories'][0]+','+i+','+find_version(techs[i]['versions'])+'\n')
      else:
@@ -90,6 +139,10 @@ url = args.url
 file = args.file
 writefile = args.writefile
 silencio = args.quiet
+_technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
+
+if not os.path.exists(_technologies_file) or (os.path.getmtime(_technologies_file) < time.time() - 86400):
+  update_technologies()
 
 if writefile != '':
   j = open(writefile,'a')

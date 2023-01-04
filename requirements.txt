@@ -1,4 +1,10 @@
-colorama
-requests
+sys
 argparse
-python-Wappalyzer
+requests
+colorama
+warnings
+os
+concurrent
+json
+time
+pkg_resources

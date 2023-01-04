@@ -3,14 +3,25 @@ Multithreaded Wappalyzer CLI tool to find Web Technologies
 
 based on the wappalyzer-cli by gokulapap
 
+Now uses the updated files from Wappalyzer, isntead of the static file from the semi-unmaintained wappalyzer-cli
+
 # Installation :
+
+> pip uninstall python-Wappalyzer || sudo pip uninstall python-Wappalyzer
+
+> git clone https://github.com/chorsley/python-Wappalyzer.git
+
+> cd python-Wappalyzer/
+
+> sudo python setup.py install
+
+> cd ..
 
 > git clone https://github.com/brandonscholet/wappybird
 
 > cd wappybird
 
 > sudo python setup.py install
-
 
 ```
 ─$ ./wappy  -h
