@@ -2,7 +2,6 @@ sys
 argparse
 requests
 colorama
-warnings
 os
 concurrent
 json
