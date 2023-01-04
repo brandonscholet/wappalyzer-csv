@@ -42,4 +42,4 @@ options:
 ```
 
 # Demo 
-![wappy](https://github.com/brandonscholet/wappybird/blob/master/walkthrough.gif?raw=true)
+<img src="https://github.com/brandonscholet/wappybird/blob/master/walkthrough.gif?" width=1000>
