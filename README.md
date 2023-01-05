@@ -24,7 +24,7 @@ Now uses the updated files from Wappalyzer, isntead of the static file from the 
 > sudo python setup.py install
 
 ```
-─$ ./wappy  -h
+─$ wappy -h
 usage: wappybird [-h] [-u URL] [-f FILE] [-wf WRITEFILE] [-t THREADS] [-q]
 
 Finds Web Technologies!
