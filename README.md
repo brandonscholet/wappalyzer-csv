@@ -7,7 +7,7 @@ Now uses the updated files from Wappalyzer, isntead of the static file from the 
 
 # Installation :
 
-> pip uninstall python-Wappalyzer || sudo pip uninstall python-Wappalyzer
+> pip uninstall python-Wappalyzer -y || sudo pip uninstall python-Wappalyzer -y
 
 > git clone https://github.com/chorsley/python-Wappalyzer.git
 
