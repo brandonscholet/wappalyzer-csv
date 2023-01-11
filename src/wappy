@@ -10,6 +10,8 @@ import concurrent
 import json
 import time
 import pkg_resources
+from zipfile import ZipFile
+import io
 warnings.filterwarnings("ignore")
 
 
@@ -62,6 +64,41 @@ def update_technologies():
     with open(technologies_file, 'w', encoding='utf-8') as tfile:
         tfile.write(json.dumps(combined_object))
         tfile.flush()
+
+def update_technologies_from_latest():
+	print("updating technologies")
+	technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
+	technologies = {}
+	 
+	#get release page
+	latest_release = requests.get('https://api.github.com/repos/wappalyzer/wappalyzer/releases/latest').json()
+	#get zip from url
+	zip_url = requests.get(latest_release['zipball_url'])
+	myzip = ZipFile(io.BytesIO(zip_url.content)) 
+
+	#parse files
+	for listed_file in myzip.namelist():
+		#get all technology files
+		if "src/technologies" in listed_file and ".json" in listed_file:
+			#extract file into json
+			tech_json_file=myzip.read(listed_file).decode('UTF-8')
+			#the latest release has an error
+			if "t.json" in listed_file:
+				tech_json_file = tech_json_file.replace('tally.so/embed/\'\"','tally.so/embed/\']\"')
+			tech_json = json.loads(tech_json_file)
+			#add to full json
+			technologies = {**technologies, **tech_json}
+		if "src/categories.json" in listed_file:
+			#extract categories into json
+			categories = json.loads(myzip.read(listed_file).decode('UTF-8'))
+		#merge into one object
+	combined_object = {'categories': categories, 'technologies': technologies}
+
+	#write to file
+	with open(technologies_file, 'w', encoding='utf-8') as tfile:
+	    tfile.write(json.dumps(combined_object))
+	    tfile.flush()
+	print("done!\n")
 
 def handle_http_errors(address):
 	try:
@@ -148,7 +185,7 @@ suppress_errors = args.quiet
 #get's the updated files
 technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
 if not os.path.exists(technologies_file) or os.path.getmtime(technologies_file) < time.time() - 86400:
-	update_technologies()
+	update_technologies_from_latest()
 
 # Check if output file is specified
 if args.writefile:
