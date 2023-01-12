@@ -17,14 +17,14 @@ warnings.filterwarnings("ignore")
 
 #check that the proper version of Wappalyzer is installed
 try:
-    pkg_resources.require("python-Wappalyzer>=0.4.0")
+    pkg_resources.require("python-Wappalyzer>=0.4.1")
 except pkg_resources.VersionConflict as e:
 	#the pip version is out of date
     print(f"{Style.BRIGHT+Fore.RED}\nError: {e}")
     print(f"{Fore.BLUE}\nWappalyzer Version is unsupported, likely installed by pip. Upgrade it with the following commands: {Style.RESET_ALL}")
     print("""
 pip uninstall python-Wappalyzer -y || sudo pip uninstall python-Wappalyzer -y
-git clone https://github.com/chorsley/python-Wappalyzer.git /tmp/python-Wappalyzer
+git clone https://github.com/brandonscholet/python-Wappalyzer /tmp/python-Wappalyzer
 cd /tmp/python-Wappalyzer/
 sudo python setup.py install
 	""")
@@ -35,7 +35,7 @@ except Exception as e:
     print(f"{Style.BRIGHT+Fore.RED}\nError: {e}")
     print(f"{Fore.BLUE}\nInstall it with the following commands:{Style.RESET_ALL}")
     print("""
-git clone https://github.com/chorsley/python-Wappalyzer.git /tmp/python-Wappalyzer
+git clone https://github.com/brandonscholet/python-Wappalyzer /tmp/python-Wappalyzer
 cd /tmp/python-Wappalyzer
 sudo python setup.py install
 	""")
@@ -82,9 +82,6 @@ def update_technologies_from_latest():
 		if "src/technologies" in listed_file and ".json" in listed_file:
 			#extract file into json
 			tech_json_file=myzip.read(listed_file).decode('UTF-8')
-			#the latest release has an error
-			if "t.json" in listed_file:
-				tech_json_file = tech_json_file.replace('tally.so/embed/\'\"','tally.so/embed/\']\"')
 			tech_json = json.loads(tech_json_file)
 			#add to full json
 			technologies = {**technologies, **tech_json}
