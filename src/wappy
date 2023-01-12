@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 
 #check that the proper version of Wappalyzer is installed
 try:
-    pkg_resources.require("python-Wappalyzer>=0.4.1")
+    pkg_resources.require("python-Wappalyzer>=0.4.2")
 except pkg_resources.VersionConflict as e:
 	#the pip version is out of date
     print(f"{Style.BRIGHT+Fore.RED}\nError: {e}")
