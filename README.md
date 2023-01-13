@@ -3,7 +3,7 @@ Multithreaded Wappalyzer CLI tool to find Web Technologies, with optional CSV ou
 
 based on the wappalyzer-cli by gokulapap
 
-Now uses the updated files from Wappalyzer, isntead of the static file from the semi-unmaintained wappalyzer-cli
+Now uses the updated files from npm Wappalyzer, isntead of the static file from python-Wappalyzer
 
 # Installation :
 
