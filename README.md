@@ -9,7 +9,7 @@ Now uses the updated files from npm Wappalyzer, isntead of the static file from 
 
 > pip uninstall python-Wappalyzer -y || sudo pip uninstall python-Wappalyzer -y
 
-> git clone https://github.com/chorsley/python-Wappalyzer.git
+> git clone https://github.com/brandonscholet/python-Wappalyzer.git
 
 > cd python-Wappalyzer/
 
