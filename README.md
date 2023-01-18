@@ -28,7 +28,7 @@ Now uses the updated files from the npm-based [Wappalyzer](https://github.com/wa
 
 # Hella Input Examples:
 
-> wappy -u <URL> <URL>
+> wappy -u \<URL\> <URL>
 
 > wappy -f <file> <file2> -u <URL>
 
