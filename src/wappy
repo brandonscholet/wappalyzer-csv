@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import argparse
@@ -27,7 +27,7 @@ except pkg_resources.VersionConflict as e:
 pip uninstall python-Wappalyzer -y || sudo pip uninstall python-Wappalyzer -y
 git clone https://github.com/brandonscholet/python-Wappalyzer /tmp/python-Wappalyzer
 cd /tmp/python-Wappalyzer/
-sudo python setup.py install
+sudo python3 setup.py install
 	""")
     sys.exit()
 
@@ -38,7 +38,7 @@ except Exception as e:
     print("""
 git clone https://github.com/brandonscholet/python-Wappalyzer /tmp/python-Wappalyzer
 cd /tmp/python-Wappalyzer
-sudo python setup.py install
+sudo python3 setup.py install
 	""")
     sys.exit()
     
