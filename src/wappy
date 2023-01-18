@@ -135,7 +135,7 @@ def save_deets(webpage_object):
 		with open(host_folder+"/scripts", 'w+') as script_file:
 			for script in webpage_object.scripts:
 				script_file.write(script + '\n')						
-		#save html to file
+		#save pretty html to file
 		with open(host_folder+"/html", 'w+') as html_file:
 			pretty_html=BeautifulSoup(webpage_object.html, "html.parser").prettify()
 			html_file.write(pretty_html)
