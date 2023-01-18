@@ -28,17 +28,21 @@ Now uses the updated files from the npm-based [Wappalyzer](https://github.com/wa
 
 # Hella Input Examples:
 
-> wappy -u \<URL\> <URL>
+> wappy -u \<URL\> \<URL\>
 
-> wappy -f <file> <file2> -u <URL>
+> wappy -f \<file\> \<file2\> -u \<URL\>
 
-> wappy -f <file> -u <URL> -f <file2> <file3> 
+> wappy -f \<file\> -u \<URL\> -f \<file2\> \<file3\> 
 
 > subfinder -d example.com | wappy -wf <output.csv> -q -t 25
 
-> echo <URL>,<URL>,<URL> | wappy -q
+> cat expanded_scope | wappy
 
-> echo <URL> <URL> <URL> | wappy 
+> nmap -sL -n -iL \<scope_with_subnets\> | awk '/Nmap scan report/{print $NF}'  ) | wappy -t 25 -wf \<output.csv\>
+
+> echo \<URL\>,\<URL\>,\<URL\> | wappy -q
+
+> echo \<URL\> \<URL\> \<URL\> | wappy 
 
 # Usage
 
