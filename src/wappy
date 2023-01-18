@@ -13,6 +13,7 @@ import pkg_resources
 from zipfile import ZipFile
 import io
 import click
+from bs4 import BeautifulSoup
 warnings.filterwarnings("ignore")
 
 
@@ -113,6 +114,32 @@ def handle_http_errors(address):
 	else:
 		return("Some Other Error")
 
+def save_deets(webpage_object):
+		folder_url=webpage_object.url.replace('://','_').rstrip('/').replace('/','_')
+		#make path for output		
+		if not os.path.exists(args.scrape_dir):
+			os.mkdir(args.scrape_dir)
+		#make path for host		
+		host_folder=args.scrape_dir+'/'+folder_url
+		if not os.path.exists(host_folder):
+			os.mkdir(host_folder)
+		#save headers to file
+		with open(host_folder+"/headers", 'w+') as header_file:
+			for i,k in webpage_object.headers.items():
+				header_file.write(i+' : '+k+"\n")
+		#save metadata to file
+		with open(host_folder+"/metadata", 'w+') as metadata_file:
+			for i,k in webpage_object.meta.items():
+				metadata_file.write(i+' : '+k+"\n")
+		#save scripts to file
+		with open(host_folder+"/scripts", 'w+') as script_file:
+			for script in webpage_object.scripts:
+				script_file.write(script + '\n')						
+		#save html to file
+		with open(host_folder+"/html", 'w+') as html_file:
+			pretty_html=BeautifulSoup(webpage_object.html, "html.parser").prettify()
+			html_file.write(pretty_html)
+
 def find_techs(host):
 	#hopefully redundant strip
 	host=host.strip()
@@ -137,6 +164,11 @@ def find_techs(host):
 	#try to scan the page using wappalyzer	
 	try:
 		webpage = WebPage.new_from_url(final_url, verify=False, timeout=60)
+		#if you want to saved the details off for grep or whatnot		
+		if args.scrape_dir:
+			save_deets(webpage)
+		
+		exit()
 		wappalyzer= Wappalyzer.latest(technologies_file=technologies_file)
 		techs = wappalyzer.analyze_with_versions_and_categories(webpage)
 	except Exception as e:
@@ -172,6 +204,7 @@ def find_techs(host):
 
 parser = argparse.ArgumentParser(description='''Note: This program also accepts hosts from STDIN with space, comma or newline delimiters.\n\nFinds Web Technologies!''', formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('-u', '--url', nargs="+", action='extend', help='url to find technologies')
+parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
 parser.add_argument('-f', '--file', nargs="+", action='extend', help="list of urls to find web technologies")
 parser.add_argument('-wf', '--writefile', default='', help="File to write csv output to")
 parser.add_argument('-t', '--threads', default=10, type=int, help="How many threads yo?")
