@@ -2,6 +2,8 @@
 
 Multithreaded Wappalyzer CLI tool to find Web Technologies, with optional CSV output.
 
+You can also provide a directory and all scraped data will be saved with a subfolder per host
+
 Allows multiple methods of input, including files, urls, and STDIN. Provided jsut the hostname, it will attempt to access via HTTPS and then HTTP, allowing redirects.
 
 based originally on the wappalyzer-cli by gokulapap
@@ -48,12 +50,14 @@ Now uses the updated files from the npm-based [Wappalyzer](https://github.com/wa
 
 ```
 ─$ wappy -h
-usage: wappy [-h] [-u URL [URL ...]] [-f FILE [FILE ...]] [-wf WRITEFILE]
+usage: wappy [-h] [-u URL [URL ...]] [-f FILE [FILE ...]] [-wf WRITEFILE] [-s [SCRAPE_DIR]]
              [-t THREADS] [-q]
 
-Note: This program also accepts hosts from STDIN with space, comma or newline delimiters.
+Multithreaded Web technology finder!
 
-Finds Web Technologies!
+Optional output into CSV and can save scraped site data.
+
+Note: This program also accepts hosts from STDIN with space, comma or newline delimiters.
 
 options:
   -h, --help            show this help message and exit
@@ -63,6 +67,8 @@ options:
                         list of urls to find web technologies
   -wf WRITEFILE, --writefile WRITEFILE
                         File to write csv output to
+  -s [SCRAPE_DIR], --scrape_dir [SCRAPE_DIR]
+                        save all scraped data
   -t THREADS, --threads THREADS
                         How many threads yo?
   -q, --quiet           Don't want to see any errors?

@@ -202,11 +202,11 @@ def find_techs(host):
 	#returns output to end thread
 	return(output)
 
-parser = argparse.ArgumentParser(description='''Note: This program also accepts hosts from STDIN with space, comma or newline delimiters.\n\nFinds Web Technologies!''', formatter_class=argparse.RawTextHelpFormatter)
+parser = argparse.ArgumentParser(description='''Multithreaded Web technology finder!\n\nOptional output into CSV and can save scraped site data.\n\nNote: This program also accepts hosts from STDIN with space, comma or newline delimiters.''', formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument('-u', '--url', nargs="+", action='extend', help='url to find technologies')
-parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
 parser.add_argument('-f', '--file', nargs="+", action='extend', help="list of urls to find web technologies")
 parser.add_argument('-wf', '--writefile', default='', help="File to write csv output to")
+parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
 parser.add_argument('-t', '--threads', default=10, type=int, help="How many threads yo?")
 parser.add_argument('-q', '--quiet', default=False, action='store_true', help="Don't want to see any errors?")
 
