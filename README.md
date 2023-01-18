@@ -16,7 +16,7 @@ Now uses the updated files from the npm-based [Wappalyzer](https://github.com/wa
 
 > cd python-Wappalyzer/
 
-> sudo python setup.py install
+> sudo python3 setup.py install
 
 > cd ..
 
@@ -24,7 +24,7 @@ Now uses the updated files from the npm-based [Wappalyzer](https://github.com/wa
 
 > cd wappybird
 
-> sudo python setup.py install
+> sudo python3 setup.py install
 
 # Hella Input Examples:
 
