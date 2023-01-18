@@ -113,6 +113,21 @@ def handle_http_errors(address):
 		return("Some Other Error")
 	else:
 		return("Some Other Error")
+		
+def follow_meta_refresh(url):
+	res = requests.get(url,verify=False)
+	html_page = res.content
+	soup = BeautifulSoup(html_page, 'html.parser')
+	meta_tags = soup.find_all('meta',attrs={"http-equiv":"refresh"})
+	blacklist = ['noscript']
+	for meta in meta_tags:
+		if meta.parent.name not in blacklist:
+			wait,text=meta["content"].split(";")
+			if text.strip().lower().startswith("url="):
+			    redirect_url=text.strip()[4:]
+			    new_url = requests.compat.urljoin(url,redirect_url)
+			    return follow_meta_refresh(new_url)
+	return url		
 
 def save_deets(webpage_object):
 		folder_url=webpage_object.url.replace('://','_').rstrip('/').replace('/','_')
@@ -161,14 +176,15 @@ def find_techs(host):
 	else:
 		#this is the one we will use
 		final_url=url_test
+		#final_url=follow_meta_refresh(url_test)
+		
 	#try to scan the page using wappalyzer	
 	try:
 		webpage = WebPage.new_from_url(final_url, verify=False, timeout=60)
 		#if you want to saved the details off for grep or whatnot		
 		if args.scrape_dir:
 			save_deets(webpage)
-		
-		exit()
+			
 		wappalyzer= Wappalyzer.latest(technologies_file=technologies_file)
 		techs = wappalyzer.analyze_with_versions_and_categories(webpage)
 	except Exception as e:
