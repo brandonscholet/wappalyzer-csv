@@ -1,21 +1,14 @@
-from setuptools import *
+from setuptools import setup, find_packages
 
 if __name__ == "__main__":
 
-    f = open("requirements.txt", 'r')
-
-    dependencies = f.read().splitlines()
-
-    f.close()
+    with open("requirements.txt") as f:
+        dependencies = f.readlines()
 
     setup(
-    scripts = ["src/wappy"],
-    name='wappybird',
-    version='0.3.0',
-    packages=find_packages(),
-    install_requires=[
-        dependencies
-    ],
-    
-    
+        scripts=["src/wappy"],
+        name='wappybird',
+        version='0.3.0',
+        packages=find_packages(),
+        install_requires=[dep.strip() for dep in dependencies],
     )
