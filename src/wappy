@@ -14,6 +14,7 @@ from zipfile import ZipFile
 import io
 import click
 from bs4 import BeautifulSoup
+import validators
 warnings.filterwarnings("ignore")
 
 
@@ -99,21 +100,6 @@ def update_technologies_from_latest():
 	    tfile.flush()
 	print("done!\n")
 
-def handle_http_errors(address):
-	try:
-		#tries to see if url is valid and allows for redirect
-		return requests.head(address, verify=False, timeout=10, allow_redirects=True).url
-	except requests.exceptions.HTTPError:
-		return("Http Error")
-	except requests.exceptions.ConnectionError:
-		return("Error Connecting")
-	except requests.exceptions.Timeout:
-		return("Timeout Error")
-	except requests.exceptions.RequestException:
-		return("Some Other Error")
-	else:
-		return("Some Other Error")
-		
 def follow_meta_refresh(url):
 	res = requests.get(url,verify=False)
 	html_page = res.content
@@ -123,12 +109,34 @@ def follow_meta_refresh(url):
 	for meta in meta_tags:
 		if meta.parent.name not in blacklist:
 			wait,text=meta["content"].split(";")
-			if text.strip().lower().startswith("url="):
-			    redirect_url=text.strip()[4:]
-			    new_url = requests.compat.urljoin(url,redirect_url)
-			    return follow_meta_refresh(new_url)
+			if text.strip().lower().startswith("url=") and int(wait) < 60:
+				redirect_url=text.strip()[4:]
+				new_url = requests.compat.urljoin(url,redirect_url)
+				return follow_meta_refresh(new_url)
 	return url		
-
+	
+def find_valid_url(address):
+	try:
+		#tries to see if url is valid and allows for redirect
+		temp_url=requests.head(address, verify=False, timeout=10, allow_redirects=True).url
+		#checks if the page redirects in under 60 seconds and then uses that url instead
+		redirect_url = follow_meta_refresh(temp_url)
+		#makes sense
+		if temp_url.strip('/') is not redirect_url.strip('/'):
+			temp_url=redirect_url
+		return temp_url
+	#handle all the errors nicely
+	except requests.exceptions.HTTPError:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Http Error: {host} {Style.RESET_ALL}")
+	except requests.exceptions.ConnectionError as e:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Error Connecting: {host} {Style.RESET_ALL}")
+	except requests.exceptions.Timeout:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Timeout Error: {host} {Style.RESET_ALL}")
+	except requests.exceptions.RequestException:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Some Other Error: {host} {Style.RESET_ALL}")
+	else:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Some Other Error: {host} {Style.RESET_ALL}")
+		
 def save_deets(webpage_object):
 		folder_url=webpage_object.url.replace('://','_').rstrip('/').replace('/','_')
 		#make path for output		
@@ -158,38 +166,43 @@ def save_deets(webpage_object):
 def find_techs(host):
 	#hopefully redundant strip
 	host=host.strip()
-	#for testing which protocols to use
-	url_test=host
-	
-	if not host:
-		return
-	#checking input missing protocol and then trying to connect to https and then http
-	if 'http' in host:
-		url_test = handle_http_errors(host)
-	else:
-		url_test = handle_http_errors('https://'+host)
-		if "error" in url_test.lower():
-			url_test = handle_http_errors('http://'+host)
-	#if you cant connect to the IP with either protocol, raise the error
-	if "error" in url_test.lower():
-		raise ValueError(f"\n{Style.BRIGHT+Fore.RED+url_test}: {host} {Style.RESET_ALL}")
-	else:
-		#this is the one we will use
-		final_url=url_test
-		#final_url=follow_meta_refresh(url_test)
+	final_url=""
+	try:
+		#if it is already a URL, then use it
+		if validators.url(host):	
+			final_url = find_valid_url(host)
+		else:
+			#checks HTTPS and then HTTP
+			for protocol in ['https://', 'http://']:
+				url_string = protocol + host
+				try:
+					#checks URL, and allows redirects
+					final_url = find_valid_url(url_string)
+					if final_url:
+						break
+				except:
+					pass
+			else:
+				#if http and https do not work then error out
+				return ConnectionError(f"\n{Style.BRIGHT+Fore.RED}HTTP/HTTPS invalid: {host} {Style.RESET_ALL}")
+	#catch invalid name from find_valid_url
+	except NameError:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Host Doesn't Exist: {host} {Style.RESET_ALL}")
+	#not seeing anything else here yet.	
+	except Exception as e:
+		raise ConnectionError(f"\n{Style.BRIGHT+Fore.RED}Unknown Error: {host} {Style.RESET_ALL}\n{e}")
 		
-	#try to scan the page using wappalyzer	
+	#actually running the only thing this program is good for
 	try:
 		webpage = WebPage.new_from_url(final_url, verify=False, timeout=60)
 		#if you want to saved the details off for grep or whatnot		
 		if args.scrape_dir:
 			save_deets(webpage)
-			
 		wappalyzer= Wappalyzer.latest(technologies_file=technologies_file)
 		techs = wappalyzer.analyze_with_versions_and_categories(webpage)
 	except Exception as e:
-		return f"{Style.BRIGHT+Fore.RED}\n[!] WAPPALYZER ERROR: {final_url}:\n{Style.RESET_ALL}\n{e}"
-
+		raise f"{Style.BRIGHT+Fore.RED}\n[!] WAPPALYZER ERROR: {final_url}:\n{Style.RESET_ALL}\n{e}"
+	
 	#display purposes
 	formatted_url = final_url.split("//")[1].rstrip("/")
 
@@ -225,7 +238,6 @@ parser.add_argument('-wf', '--writefile', default='', help="File to write csv ou
 parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
 parser.add_argument('-t', '--threads', default=10, type=int, help="How many threads yo?")
 parser.add_argument('-q', '--quiet', default=False, action='store_true', help="Don't want to see any errors?")
-
 
 args = parser.parse_args()
 thread_count=args.threads
@@ -286,7 +298,8 @@ if args.file:
 #adds provided urls from args.url
 if args.url:
 	urls_to_test.extend(args.url)
-
+		
+exit()
 #get a unique list of urls
 urls_to_test=set(urls_to_test)
 
