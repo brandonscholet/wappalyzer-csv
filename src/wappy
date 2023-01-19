@@ -248,7 +248,6 @@ parser.add_argument('-q', '--quiet', default=False, action='store_true', help="D
 parser.add_argument('--no-meta-refresh', default=False, action='store_true', help="If meta refresh redirection breaks or is not what you want")
 
 args = parser.parse_args()
-print(args)
 thread_count=args.threads
 suppress_errors = args.quiet
 urls_to_test=[]
