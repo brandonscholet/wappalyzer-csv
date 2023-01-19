@@ -9,7 +9,7 @@ if __name__ == "__main__":
         test/no-ref/forking-practice
         scripts=["src/wappy"],
         name='wappybird',
-        version='0.3.3',
+        version='0.3.4',
         packages=find_packages(),
         install_requires=[dep.strip() for dep in dependencies],
     )

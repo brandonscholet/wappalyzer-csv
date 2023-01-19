@@ -51,7 +51,7 @@ Now uses the updated files from the npm-based [Wappalyzer](https://github.com/wa
 ```
 ─$ wappy -h
 usage: wappy [-h] [-u URL [URL ...]] [-f FILE [FILE ...]] [-wf WRITEFILE] [-s [SCRAPE_DIR]]
-             [-t THREADS] [-q]
+             [-t THREADS] [-q] [--no-meta-refresh]
 
 Multithreaded Web technology finder!
 
@@ -72,6 +72,7 @@ options:
   -t THREADS, --threads THREADS
                         How many threads yo?
   -q, --quiet           Don't want to see any errors?
+  --no-meta-refresh     If meta refresh redirection breaks or is not what you want
 
 ```
 

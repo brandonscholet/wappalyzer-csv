@@ -104,13 +104,19 @@ def follow_meta_refresh(url):
 	res = requests.get(url,verify=False)
 	html_page = res.content
 	soup = BeautifulSoup(html_page, 'html.parser')
+	#finds all meta refresh tags
 	meta_tags = soup.find_all('meta',attrs={"http-equiv":"refresh"})
+	#ignore refreshes in noscript
 	blacklist = ['noscript']
 	for meta in meta_tags:
 		if meta.parent.name not in blacklist:
+			#grab wait time and url
 			wait,text=meta["content"].split(";")
+			#if meta refresh is less than 60 seconds
 			if text.strip().lower().startswith("url=") and int(wait) < 60:
+				#grab url
 				redirect_url=text.strip()[4:]
+				#adds local dir or overwrites with new url
 				new_url = requests.compat.urljoin(url,redirect_url)
 				return follow_meta_refresh(new_url)
 	return url		
@@ -119,11 +125,12 @@ def find_valid_url(address):
 	try:
 		#tries to see if url is valid and allows for redirect
 		temp_url=requests.head(address, verify=False, timeout=10, allow_redirects=True).url
-		#checks if the page redirects in under 60 seconds and then uses that url instead
-		redirect_url = follow_meta_refresh(temp_url)
-		#makes sense
-		if temp_url.strip('/') is not redirect_url.strip('/'):
-			temp_url=redirect_url
+		if not args.no_meta_refresh:
+			#checks if the page redirects in under 60 seconds and then uses that url instead
+			redirect_url = follow_meta_refresh(temp_url)
+			#makes sense
+			if temp_url.strip('/') is not redirect_url.strip('/'):
+				temp_url=redirect_url
 		return temp_url
 	#handle all the errors nicely
 	except requests.exceptions.HTTPError:
@@ -238,8 +245,10 @@ parser.add_argument('-wf', '--writefile', default='', help="File to write csv ou
 parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
 parser.add_argument('-t', '--threads', default=10, type=int, help="How many threads yo?")
 parser.add_argument('-q', '--quiet', default=False, action='store_true', help="Don't want to see any errors?")
+parser.add_argument('--no-meta-refresh', default=False, action='store_true', help="If meta refresh redirection breaks or is not what you want")
 
 args = parser.parse_args()
+print(args)
 thread_count=args.threads
 suppress_errors = args.quiet
 urls_to_test=[]
@@ -299,7 +308,6 @@ if args.file:
 if args.url:
 	urls_to_test.extend(args.url)
 		
-exit()
 #get a unique list of urls
 urls_to_test=set(urls_to_test)
 
