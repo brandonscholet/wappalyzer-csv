@@ -49,8 +49,10 @@ from Wappalyzer import Wappalyzer, WebPage
 
 def update_technologies():
     print("updating technologies", end="")
-
-    technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
+    technologies_filepath = os.path.expanduser('~/.python-Wappalyzer')
+    if not os.path.exists(technologies_filepath):
+    	os.makedirs(technologies_filepath)
+    technologies_file = os.path.join(technologies_filepath,'technologies.json')
     #get new categories from current Wappalyzer repo
     categories_response = requests.get('https://github.com/AliasIO/wappalyzer/raw/master/src/categories.json')
     categories = categories_response.json()
@@ -70,7 +72,10 @@ def update_technologies():
 
 def update_technologies_from_latest():
 	print("updating technologies")
-	technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
+	technologies_filepath = os.path.expanduser('~/.python-Wappalyzer')
+	if not os.path.exists(technologies_filepath):
+		os.makedirs(technologies_filepath)
+	technologies_file = os.path.join(technologies_filepath,'technologies.json')
 	technologies = {}
 	 
 	#get release page
