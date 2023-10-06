@@ -8,7 +8,7 @@ if __name__ == "__main__":
     setup(
         scripts=["src/wappy"],
         name='wappybird',
-        version='0.3.5',
+        version='0.3.6',
         packages=find_packages(),
         install_requires=[dep.strip() for dep in dependencies],
     )

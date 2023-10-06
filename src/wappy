@@ -47,64 +47,6 @@ sudo python3 setup.py install
 #finally import
 from Wappalyzer import Wappalyzer, WebPage    
 
-def update_technologies():
-    print("updating technologies", end="")
-    technologies_filepath = os.path.expanduser('~/.python-Wappalyzer')
-    if not os.path.exists(technologies_filepath):
-    	os.makedirs(technologies_filepath)
-    technologies_file = os.path.join(technologies_filepath,'technologies.json')
-    #get new categories from current Wappalyzer repo
-    categories_response = requests.get('https://github.com/AliasIO/wappalyzer/raw/master/src/categories.json')
-    categories = categories_response.json()
-    technologies = {}
-    #get new technologies from current Wappalyzer repo. they have been split into multiple files
-    for letter in '_abcdefghijklmnopqrstuvwxyz':
-        technologies_response = requests.get(f'https://github.com/AliasIO/wappalyzer/raw/master/src/technologies/{letter}.json')
-        print(".", end="")
-        technologies = {**technologies, **technologies_response.json()}
-    #merge into one object
-    combined_object = {'categories': categories, 'technologies': technologies}
-    print()
-
-    with open(technologies_file, 'w', encoding='utf-8') as tfile:
-        tfile.write(json.dumps(combined_object))
-        tfile.flush()
-
-def update_technologies_from_latest():
-	print("updating technologies")
-	technologies_filepath = os.path.expanduser('~/.python-Wappalyzer')
-	if not os.path.exists(technologies_filepath):
-		os.makedirs(technologies_filepath)
-	technologies_file = os.path.join(technologies_filepath,'technologies.json')
-	technologies = {}
-	 
-	#get release page
-	latest_release = requests.get('https://api.github.com/repos/wappalyzer/wappalyzer/releases/latest').json()
-	#get zip from url
-	zip_url = requests.get(latest_release['zipball_url'])
-	myzip = ZipFile(io.BytesIO(zip_url.content)) 
-
-	#parse files
-	for listed_file in myzip.namelist():
-		#get all technology files
-		if "src/technologies" in listed_file and ".json" in listed_file:
-			#extract file into json
-			tech_json_file=myzip.read(listed_file).decode('UTF-8')
-			tech_json = json.loads(tech_json_file)
-			#add to full json
-			technologies = {**technologies, **tech_json}
-		if "src/categories.json" in listed_file:
-			#extract categories into json
-			categories = json.loads(myzip.read(listed_file).decode('UTF-8'))
-		#merge into one object
-	combined_object = {'categories': categories, 'technologies': technologies}
-
-	#write to file
-	with open(technologies_file, 'w', encoding='utf-8') as tfile:
-	    tfile.write(json.dumps(combined_object))
-	    tfile.flush()
-	print("done!\n")
-
 def follow_meta_refresh(url):
 	res = requests.get(url,verify=False)
 	html_page = res.content
@@ -213,7 +155,7 @@ def find_techs(host):
 		wappalyzer= Wappalyzer.latest(technologies_file=technologies_file)
 		techs = wappalyzer.analyze_with_versions_and_categories(webpage)
 	except Exception as e:
-		raise f"{Style.BRIGHT+Fore.RED}\n[!] WAPPALYZER ERROR: {final_url}:\n{Style.RESET_ALL}\n{e}"
+		print(f"{Style.BRIGHT+Fore.RED}\n[!] WAPPALYZER ERROR: {final_url}:\n{Style.RESET_ALL}\n{e}")
 	
 	#display purposes
 	formatted_url = final_url.split("//")[1].rstrip("/")
@@ -261,10 +203,11 @@ urls_to_test=[]
 if not args.file and not args.url and sys.stdin.isatty():
 	print(parser.error('File, URL, or STDIN required'))
 
-#get's the updated files
-technologies_file = os.path.expanduser('~/.python-Wappalyzer/technologies.json')
-if not os.path.exists(technologies_file) or os.path.getmtime(technologies_file) < time.time() - 86400:
-	update_technologies_from_latest()
+#get's the updated file
+package_directory = os.path.dirname(os.path.abspath(__file__))
+technologies_file = os.path.join(package_directory, "..","data", "technologies.json")
+
+
 	
 #grep stuff redirected from STDIN. ensures to split if they are space or comma deliminated
 if not sys.stdin.isatty():
