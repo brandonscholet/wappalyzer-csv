@@ -78,6 +78,7 @@ def find_valid_url(address):
 			#makes sense
 			if temp_url.strip('/') is not redirect_url.strip('/'):
 				temp_url=redirect_url
+		
 		return temp_url
 	#handle all the errors nicely
 	except requests.exceptions.HTTPError:
@@ -118,8 +119,12 @@ def save_deets(webpage_object):
 			html_file.write(pretty_html)
 
 def find_techs(host):
+	#get's the updated file
+	package_directory = os.path.dirname(os.path.abspath(__file__))
+	technologies_file = os.path.join(package_directory, "technologies.json")
 	#hopefully redundant strip
 	host=host.strip()
+
 	final_url=""
 	try:
 		#if it is already a URL, then use it
@@ -185,95 +190,115 @@ def find_techs(host):
 	#returns output to end thread
 	return(output)
 
-parser = argparse.ArgumentParser(description='''Multithreaded Web technology finder!\n\nOptional output into CSV and can save scraped site data.\n\nNote: This program also accepts hosts from STDIN with space, comma or newline delimiters.''', formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('-u', '--url', nargs="+", action='extend', help='url to find technologies')
-parser.add_argument('-f', '--file', nargs="+", action='extend', help="list of urls to find web technologies")
-parser.add_argument('-wf', '--writefile', default='', help="File to write csv output to")
-parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
-parser.add_argument('-t', '--threads', default=10, type=int, help="How many threads yo?")
-parser.add_argument('-q', '--quiet', default=False, action='store_true', help="Don't want to see any errors?")
-parser.add_argument('--no-meta-refresh', default=False, action='store_true', help="If meta refresh redirection breaks or is not what you want")
+def parse_args():
+	parser = argparse.ArgumentParser(description='''Multithreaded Web technology finder!\n\nOptional output into CSV and can save scraped site data.\n\nNote: This program also accepts hosts from STDIN with space, comma or newline delimiters.''', formatter_class=argparse.RawTextHelpFormatter)
+	parser.add_argument('-u', '--url', nargs="+", action='extend', help='url to find technologies')
+	parser.add_argument('-f', '--file', nargs="+", action='extend', help="list of urls to find web technologies")
+	parser.add_argument('-wf', '--writefile', default='', help="File to write csv output to")
+	parser.add_argument('-s', '--scrape_dir', nargs='?', const='.', help="save all scraped data")
+	parser.add_argument('-t', '--threads', default=10, type=int, help="How many threads yo?")
+	parser.add_argument('-q', '--quiet', default=False, action='store_true', help="Don't want to see any errors?")
+	parser.add_argument('--no-meta-refresh', default=False, action='store_true', help="If meta refresh redirection breaks or is not what you want")
 
-args = parser.parse_args()
-thread_count=args.threads
-suppress_errors = args.quiet
-urls_to_test=[]
-
-#error if no argument provided
-if not args.file and not args.url and sys.stdin.isatty():
-	print(parser.error('File, URL, or STDIN required'))
-
-#get's the updated file
-package_directory = os.path.dirname(os.path.abspath(__file__))
-technologies_file = os.path.join(package_directory, "..","data", "technologies.json")
-
+	args = parser.parse_args()
 
 	
-#grep stuff redirected from STDIN. ensures to split if they are space or comma deliminated
-if not sys.stdin.isatty():
-	for line in sys.stdin:
-		if "," in line:
-			urls_to_test.extend(line.rstrip().split(","))
-		elif " " in line:
-			urls_to_test.extend(line.rstrip().split(" "))
-		else:
-			urls_to_test.extend([line.rstrip()])
 
-# Check if output file is specified
-if args.writefile:
-	# Open file in append mode and move cursor to the end
-	output_file = open(args.writefile, 'a')
-	output_file.seek(0, os.SEEK_END)
+	#error if no argument provided
+	if not args.file and not args.url and sys.stdin.isatty():
+		print(parser.error('File, URL, or STDIN required'))
+	return args
 
-	# If current position is not 0, rewind the file for future use
-	if output_file.tell():
-		output_file.seek(0)
-	else:
-		# Write header to file
-		output_file.write('URL,CATEGORY,NAME,VERSION\n')
-else:
-	output_file=""
-  
-# Check if input file is specified and loops to add to urls
-if args.file:
-	for file in args.file:
-		# Open file in read mode
-		try:
-			input_file = open(file, 'r')
-			# Read all lines and store them in a list, while stripping
-			urls_to_test.extend([line.rstrip() for line in input_file.readlines()])
-		except:
-			#ask if they want to skip the file or exit
-			print(Style.BRIGHT+Fore.RED,f"\n[!] File Error: file {file} does not exist.\n",Style.RESET_ALL)
-			if click.confirm("Do you want to skip it? No mean exiting.", default=True):
-				print(f"\nSkipping {file}!")
-			else:
-				print("\nBetter luck next time...")
-				exit()
+	
+def do_the_thing():
 
-#adds provided urls from args.url
-if args.url:
-	urls_to_test.extend(args.url)
+	global args
+	args=parse_args()
+	urls_to_test=[]
+	
+	thread_count=args.threads
+	suppress_errors = args.quiet
+	
+
+
+
 		
-#get a unique list of urls
-urls_to_test=set(urls_to_test)
+	#grep stuff redirected from STDIN. ensures to split if they are space or comma deliminated
+	if not sys.stdin.isatty():
+		for line in sys.stdin:
+			if "," in line:
+				urls_to_test.extend(line.rstrip().split(","))
+			elif " " in line:
+				urls_to_test.extend(line.rstrip().split(" "))
+			else:
+				urls_to_test.extend([line.rstrip()])
 
-#ensures there is at least one
-if len(urls_to_test):
-	# Use ThreadPoolExecutor to run the find_techs function concurrently
-	with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
-		# Create a dictionary with a future object as key and the url as value
-		future_to_url = {executor.submit(find_techs, i): i for i in urls_to_test}
-		# Iterate through completed futures
-		for future in concurrent.futures.as_completed(future_to_url):
-			future_to_url[future]
-			try:		
-				print(future.result())
-			except Exception as exc:
-				#don't print errors if they don't ask
-				if not suppress_errors:
-					print(exc)
-else:
-	print(Style.BRIGHT+Fore.RED,f"\n[!] No URLs provided.",Style.RESET_ALL)
+	# Check if output file is specified
+	if args.writefile:
+		# Open file in append mode and move cursor to the end
+		global output_file 
+		output_file = open(args.writefile, 'a')
+		output_file.seek(0, os.SEEK_END)
+
+		# If current position is not 0, rewind the file for future use
+		if output_file.tell():
+			output_file.seek(0)
+		else:
+			# Write header to file
+			output_file.write('URL,CATEGORY,NAME,VERSION\n')
+	else:
+		output_file=""
+	  
+	# Check if input file is specified and loops to add to urls
+	if args.file:
+		for file in args.file:
+			# Open file in read mode
+			try:
+				input_file = open(file, 'r')
+				# Read all lines and store them in a list, while stripping
+				urls_to_test.extend([line.rstrip() for line in input_file.readlines()])
+			except:
+				#ask if they want to skip the file or exit
+				print(Style.BRIGHT+Fore.RED,f"\n[!] File Error: file {file} does not exist.\n",Style.RESET_ALL)
+				if click.confirm("Do you want to skip it? No mean exiting.", default=True):
+					print(f"\nSkipping {file}!")
+				else:
+					print("\nBetter luck next time...")
+					exit()
+
+	#adds provided urls from args.url
+	if args.url:
+		urls_to_test.extend(args.url)
+			
+	#get a unique list of urls
+	urls_to_test=set(urls_to_test)
+
+	#ensures there is at least one
+	if len(urls_to_test):
+		# Use ThreadPoolExecutor to run the find_techs function concurrently
+		with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
+			# Create a dictionary with a future object as key and the url as value
+			future_to_url = {executor.submit(find_techs, i): i for i in urls_to_test}
+			# Iterate through completed futures
+			for future in concurrent.futures.as_completed(future_to_url):
+				future_to_url[future]
+				try:		
+					print(future.result())
+				except Exception as exc:
+					#don't print errors if they don't ask
+					if not suppress_errors:
+						print(exc)
+	else:
+		print(Style.BRIGHT+Fore.RED,f"\n[!] No URLs provided.",Style.RESET_ALL)
+
+
+
+if __name__ == "__main__":
+
+
+	do_the_thing()
 
 	
+    
+	
+
